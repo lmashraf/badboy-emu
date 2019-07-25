@@ -1,14 +1,14 @@
 // 8-bit registers
 struct Registers
 {
-    a: u8,
-    b: u8,
-    c: u8,
-    d: u8,
-    e: u8,
-    f: FlagRegisters,
-    h: u8,
-    l: u8,
+    A: u8,
+    B: u8,
+    C: u8,
+    D: u8,
+    E: u8,
+    F: FlagRegisters,
+    H: u8,
+    L: u8,
 }
 
 impl Registers 
@@ -17,26 +17,26 @@ impl Registers
     {
         Registers
         {
-            a: 0,
-            b: 0,
-            c: 0,
-            d: 0,
-            e: 0,
-            f: FlagsRegister::new(),
-            h: 0,
-            l: 0,
+            A: 0,
+            B: 0,
+            C: 0,
+            D: 0,
+            E: 0,
+            F: FlagsRegister::new(),
+            H: 0,
+            L: 0,
         }
     }
     // Read from virtual 16-bits register
-    fn get_bc(&self) -> u16 
+    fn get_BC(&self) -> u16
     {
-        (self.b as u16) << 8 | self.c as u16
+        (self.B as u16) << 8 | (self.C as u16)
     }
 
     // Write to virtual 16-bits register
-    fn set_bc(&mut self, value: u16) 
+    fn set_BC(&mut self, value: u16)
     {
-        self.b = ((value & 0xFF00) >> 8)  as u8;
-        self.c = (value & 0xFF) as u8;
+        self.B = ((value & 0xFF00) >> 8) as u8;
+        self.C = (value & 0xFF) as u8;
     }
 }

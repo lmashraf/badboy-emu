@@ -26,13 +26,13 @@ const CARRY_FLAG_BYTE_POS: u8 = 4
 
 pub struct FlagsRegister
 {
-    // set if the last operation results in a 0
+    // Set if the last operation results in a 0
     pub zero: bool,
-    // set if the last operation was a substraction
+    // Set if the last operation was a substraction
     pub substract: bool,
-    // set if lower half of the result overflowed
+    // Set if lower half of the result overflowed
     pub half_carry: bool,
-    // set if the result overflowed
+    // Set if the result overflowed
     pub carry: bool,
 }
 
