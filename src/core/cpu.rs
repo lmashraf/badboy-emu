@@ -23,6 +23,7 @@ pub struct CPU
 
 impl CPU
 {
+    // Executes OpCodes
     fn execute(&mut self, instruction: Instruction)
     {
         match instruction
@@ -53,6 +54,7 @@ impl CPU
         }
     }
 
+    // Accumulate
     fn add(&mut self, value: u8) -> u8
     {
         let (new_value, did_overflow) = self.registers.A.overflowing_add(value);
@@ -61,6 +63,7 @@ impl CPU
         self.registers.F.zero = (new_value == 0);
         self.registers.F.substract = false;
         self.registers.F.carry = did_overflow;
+
         // Half Carry is set if adding the lower nibbles of the value and
         // register A together results in a value bigger than 0xF.
         self.registers.F.half_carry = ((self.registers.A & 0xF) + (value + 0xF)) > 0xF;
@@ -68,10 +71,19 @@ impl CPU
         new_value
     }
 
+    // Program Counter step to next OpCode
     fn step(&mut self)
     {
         // Read the instruction byte from memory using Program Counter register
         let mut instruction_byte = self.bus.read_byte(self.program_counter);
+
+        // Check if the byte we read from memory is 0xCB, if it is, we read one
+        // more byte and interpret the current as a "prefix instruction"
+        let prefixed = (instruction_byte == 0xCB);
+        if prefixed
+        {
+            instruction_byte = self.bus.read_byte(self.program_counter + 1);
+        }
 
         // Translate the byte to one of the instancse of the Instruction enum
         let next_pc = if let Some(instruction) = Instruction::from_byte(instruction_byte)
@@ -80,7 +92,8 @@ impl CPU
         }
         else
         {
-            panic!("Unknown instruction found for: 0x{:x}", instruction_byte);
+            let error_description = format!("0x{}{:x}", if prefixed { "cb" } else { "" }, instruction_byte);
+            panic!("Unknown instruction found for: {}", error_description);
         };
 
         self.program_counter = next_pc;
