@@ -1,17 +1,32 @@
 // 8-bit registers
-struct Registers {
+struct Registers
+{
     a: u8,
     b: u8,
     c: u8,
     d: u8,
     e: u8,
-    f: u8,
+    f: FlagRegisters,
     h: u8,
     l: u8,
 }
 
 impl Registers 
 {
+    pub fn new() -> Registers
+    {
+        Registers
+        {
+            a: 0,
+            b: 0,
+            c: 0,
+            d: 0,
+            e: 0,
+            f: FlagsRegister::new(),
+            h: 0,
+            l: 0,
+        }
+    }
     // Read from virtual 16-bits register
     fn get_bc(&self) -> u16 
     {
