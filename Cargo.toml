@@ -1,0 +1,7 @@
+[package]
+name = "badboy-emu"
+version = "0.1.0"
+authors = ["Lebrazi Mohammed Achraf <lebrazi.med.achraf@gmail.com>"]
+edition = "2019"
+
+[dependencies]
