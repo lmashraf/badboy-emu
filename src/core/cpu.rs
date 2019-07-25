@@ -11,9 +11,9 @@ use self::registers::Registers;
 pub struct CPU
 {
     pub registers: Registers,
-    pc: u16,
-    sp: u16,
     pub bus: MemoryBus,
+    program_counter: u16,
+    stack_pointer: u16,
     is_halted: bool,
     is_interrupted: bool,
 }
@@ -30,7 +30,9 @@ impl CPU
                 {
                     ArithmeticTarget::C =>
                     {
-                        // TODO: implement ADD on register C
+                        let value = self.registers.C;
+                        let new_value = self.add(value);
+                        self.registers.A = new_value;
                     }
                 }
                 _ => 
@@ -48,5 +50,15 @@ impl CPU
     fn add(&mut self, value: u8) -> u8
     {
         let (new_value, did_overflow) = self.registers.A.overflowing_add(value);
+
+        // Set the flags
+        self.registers.F.zero = (new_value == 0);
+        self.registers.F.substract = false;
+        self.registers.F.carry = did_overflow;
+        // Half Carry is set if adding the lower nibbles of the value and
+        // register A together results in a value bigger than 0xF.
+        self.registers.F.half_carry = ((self.registers.A & 0xF) + (value + 0xF)) > 0xF;
+
+        new_value
     }
 }
