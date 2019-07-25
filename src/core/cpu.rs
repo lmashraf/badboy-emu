@@ -3,7 +3,7 @@ pub mod instructions;
 pub mod registers;
 
 use self::instruction::{
-    ArithmeticTarget,
+    ArithmeticTarget, JumpTarget,
 };
 
 use self::registers::Registers;
@@ -46,6 +46,18 @@ impl CPU
                     self.program_counter
                 }
             }
+            Instruction::JP(target) =>
+            {
+                let jump_condition = match target
+                {
+                    JumpTarget::NZ => !self.registers.F.zero,
+                    JumpTarget::NC => !self.registers.F.carry,
+                    JumpTarget::Z => !self.registers.F.zero,
+                    JumpTarget::C => !self.registers.F.carry,
+                    JumpTarget::A => true
+                };
+                self.jump(jump_condition)
+            }
             _ =>
             {
                 // TODO: support more instructions
@@ -71,7 +83,24 @@ impl CPU
         new_value
     }
 
-    // Program Counter step to next OpCode
+    // Jump
+    fn jump(&self, should_jump: bool) -> u16
+    {
+        if should_jump
+        {
+            // GB is Little Endian, ie:
+            // PC+2 is MSB and PC+1 is LSB
+            let least_significant_byte = self.bus.read_byte(self.program_counter + 1) as u16;
+            let most_significant_byte = self.bus.read_byte(self.program_counter + 2) as u16;
+        }
+        else
+        {
+            // Jump instruction is 3 bytes wide, we still need to move the PC if we don't jump
+            self.program_counter.wrapping_add(3)
+        }
+    }
+
+    // Program Counter's step to next OpCode
     fn step(&mut self)
     {
         // Read the instruction byte from memory using Program Counter register

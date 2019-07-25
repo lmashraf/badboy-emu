@@ -1,3 +1,5 @@
+pub mod FlagRegisters;
+
 // 8-bit registers
 struct Registers
 {

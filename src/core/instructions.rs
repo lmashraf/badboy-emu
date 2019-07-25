@@ -7,16 +7,20 @@ enum ArithmeticTarget
 }
 
 // Jump Instructions
-enum JumpTest
+enum JumpTarget
 {
-    NZ, Z, NC, C, A
+    NZ,     // Not Zero
+    Z,      // Zero
+    NC,     // Not Carry
+    C,      // Carry
+    A       // Always
 }
 
 enum Instruction
 {
     // ADD can target all of the 8-bit registers except F
     ADD(ArithmeticTarget),
-    JP(JumpTest),
+    JP(JumpTarget),
 }
 
 impl Instruction
