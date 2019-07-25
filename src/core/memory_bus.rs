@@ -1,0 +1,4 @@
+pub struct MemoryBus 
+{
+    // TODO: 
+}
