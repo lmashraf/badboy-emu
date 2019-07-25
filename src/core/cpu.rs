@@ -12,8 +12,11 @@ pub struct CPU
 {
     pub registers: Registers,
     pub bus: MemoryBus,
+
+    // 16-bit registers
     program_counter: u16,
     stack_pointer: u16,
+
     is_halted: bool,
     is_interrupted: bool,
 }
@@ -33,16 +36,19 @@ impl CPU
                         let value = self.registers.C;
                         let new_value = self.add(value);
                         self.registers.A = new_value;
+                        self.program_counter.wrapping_add(1)
                     }
                 }
                 _ => 
                 {
                     // TODO: support more targets
+                    self.program_counter
                 }
             }
             _ =>
             {
                 // TODO: support more instructions
+                self.program_counter
             }
         }
     }
@@ -60,5 +66,23 @@ impl CPU
         self.registers.F.half_carry = ((self.registers.A & 0xF) + (value + 0xF)) > 0xF;
 
         new_value
+    }
+
+    fn step(&mut self)
+    {
+        // Read the instruction byte from memory using Program Counter register
+        let mut instruction_byte = self.bus.read_byte(self.program_counter);
+
+        // Translate the byte to one of the instancse of the Instruction enum
+        let next_pc = if let Some(instruction) = Instruction::from_byte(instruction_byte)
+        {
+            self.execute(instruction)
+        }
+        else
+        {
+            panic!("Unknown instruction found for: 0x{:x}", instruction_byte);
+        };
+
+        self.program_counter = next_pc;
     }
 }
