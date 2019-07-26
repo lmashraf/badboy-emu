@@ -3,7 +3,7 @@ pub mod instructions;
 pub mod registers;
 
 use self::instruction::{
-    ArithmeticTarget, JumpTarget,
+    ArithmeticTarget, JumpTest, ADDHLTarget, LoadByteSource, LoadByteTarget, LoadType,
 };
 
 use self::registers::Registers;
@@ -28,6 +28,7 @@ impl CPU
     {
         match instruction
         {
+            // ADD
             Instruction::ADD(target) =>
             {
                 match target
@@ -46,17 +47,53 @@ impl CPU
                     self.program_counter
                 }
             }
+            // JP
             Instruction::JP(target) =>
             {
                 let jump_condition = match target
                 {
-                    JumpTarget::NZ => !self.registers.F.zero,
-                    JumpTarget::NC => !self.registers.F.carry,
-                    JumpTarget::Z => !self.registers.F.zero,
-                    JumpTarget::C => !self.registers.F.carry,
-                    JumpTarget::A => true
+                    JumpTest::NZ => !self.registers.F.zero,
+                    JumpTest::NC => !self.registers.F.carry,
+                    JumpTest::Z  => !self.registers.F.zero,
+                    JumpTest::C  => !self.registers.F.carry,
+                    JumpTest::A  => true
                 };
                 self.jump(jump_condition)
+            }
+            // LD
+            Instruction::LD(load_type) =>
+            {
+                LoadType::Byte(target, source) =>
+                {
+                    let source_value = match source
+                    {
+                        LoadByteSource::A => self.registers.A,
+                        LoadByteSource::D8 => self.read_next_byte()),
+                        LoadByteSource::HLI => self.bus.read_byte(self.registers.get_HL()),
+                        _ =>
+                        {
+                            // TODO: implement other sources
+                        }
+                    };
+                    match target
+                    {
+                        LoadByteTarget::A => self.registers.A = source_value,
+                        LoadByteTarget::HLI => self.bus.write_byte(self.registers.get_HL(), source_value),
+                        _ =>
+                        {
+                            // TODO: implement other targets
+                        }
+                    };
+                    match source
+                    {
+                        LoadByteSource::D8  => self.program_counter.wrapping_add(2),
+                        _                   => self.program_counter.wrapping_add(1),
+                    }
+                    _=>
+                    {
+                        // TODO: implement other load types
+                    }
+                }
             }
             _ =>
             {

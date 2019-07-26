@@ -5,8 +5,13 @@ pub struct MemoryBus
 
 impl MemoryBus
 {
-    fun read_byete(&self, address: u16) -> u8
+    fn read_byte(&self, address: u16) -> u8
     {
         self.memory[address as usize]
+    }
+
+    fn write_byte(&self, address: u16, byte: u8)
+    {
+        // TODO: write byte to given memory address
     }
 }

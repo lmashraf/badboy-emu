@@ -1,13 +1,36 @@
 use std;
 
 // Arithmetic Instructions
-enum ArithmeticTarget
+pub enum ArithmeticTarget
 {
-    A, B, C, D, E, H, L,
+    A,
+    B,
+    C,
+    D,
+    E,
+    H,
+    L,
+}
+
+// Increment/Decrement Instructions
+pub enum IncDecTarget
+{
+    A,
+    B,
+    C,
+    D,
+    E,
+    H,
+    L,
+    HLI,
+    BC,
+    DE,
+    HL,
+    SP,
 }
 
 // Jump Instructions
-enum JumpTarget
+pub enum JumpTest
 {
     NZ,     // Not Zero
     Z,      // Zero
@@ -16,11 +39,51 @@ enum JumpTarget
     A       // Always
 }
 
-enum Instruction
+//
+pub enum ADDHLTarget
 {
-    // ADD can target all of the 8-bit registers except F
+    BC,
+    DE,
+    HL,
+    SP,
+}
+
+// Load Instructions
+pub enum LoadByteTarget
+{
+    A,
+    B,
+    C,
+    D,
+    E,
+    H,
+    L,
+    HLI
+}
+
+pub enum LoadByteSource
+{
+    A,
+    B,
+    C,
+    D,
+    E,
+    H,
+    L,
+    D8,     // Direct 8-bit value
+    HLI
+}
+
+pub enum LoadType
+{
+    Byte(LoadByteTarget, LoadByteTarget),
+}
+
+pub enum Instruction
+{
     ADD(ArithmeticTarget),
-    JP(JumpTarget),
+    JP(JumpTest),
+    LD(LoadType),
 }
 
 impl Instruction

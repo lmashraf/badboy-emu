@@ -30,7 +30,7 @@ impl Registers
         }
     }
 
-    // Read/Write for virtual 16-bits registers
+    // Read/Write functions for virtual 16-bits registers
     // BC:
     fn get_BC(&self) -> u16
     {
