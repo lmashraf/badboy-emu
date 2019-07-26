@@ -29,8 +29,52 @@ pub struct CPU
 
 impl CPU
 {
+    // Constructor
+    pub fn new(boot_rom: Option<Vec<u8>>, game_rom: Vec<u8>) -> CPU
+    {
+        CPU
+        {
+            registers: Registers::new(),
+            program_counter: 0x0,
+            stack_pointer: 0x0,
+            bus: MemoryBus::new(boot_rom, game_rom),
+            is_halted: false,
+            is_interrupted: true,
+        }
+    }
+
+    // Program Counter's step to next OpCode
+    pub fn step(&mut self) -> u8
+    {
+        // Read the instruction byte from memory using Program Counter register
+        let mut instruction_byte = self.bus.read_byte(self.program_counter);
+
+        // Check if the byte we read from memory is 0xCB, if it is, we read one
+        // more byte and interpret the current as a "prefix instruction"
+        let prefixed = (instruction_byte == 0xCB);
+
+        if prefixed
+        {
+            instruction_byte = self.bus.read_byte(self.program_counter + 1);
+        }
+
+        // Translate the byte to one of the instancse of the Instruction enum
+        let next_program_counter = if let Some(instruction) = Instruction::from_byte(instruction_byte)
+        {
+            self.execute(instruction)
+        }
+        else
+        {
+            let error_description = format!("0x{}{:x}", if prefixed { "cb" } else { "" }, instruction_byte);
+            panic!("Unknown instruction found for: {}", error_description);
+        };
+
+        self.program_counter = next_program_counter;
+    }
+
+
     // Executes OpCodes
-    fn execute(&mut self, instruction: Instruction)
+    pub fn execute(&mut self, instruction: Instruction)
     {
         match instruction
         {
@@ -205,31 +249,45 @@ impl CPU
         (most_significant_byte << 8) | least_significant_byte
     }
 
-    // Program Counter's step to next OpCode
-    fn step(&mut self)
+    // Call
+    fn call(&mut self, should_jump: bool) -> u16
     {
-        // Read the instruction byte from memory using Program Counter register
-        let mut instruction_byte = self.bus.read_byte(self.program_counter);
+        // Push the next PC on to the stack
+        let next_program_counter = self.program_counter.wrapping_add(3);
 
-        // Check if the byte we read from memory is 0xCB, if it is, we read one
-        // more byte and interpret the current as a "prefix instruction"
-        let prefixed = (instruction_byte == 0xCB);
-        if prefixed
+        // Jump to the address specified in the next 2 bytes of the memory
+        if should_jump
         {
-            instruction_byte = self.bus.read_byte(self.program_counter + 1);
-        }
-
-        // Translate the byte to one of the instancse of the Instruction enum
-        let next_pc = if let Some(instruction) = Instruction::from_byte(instruction_byte)
-        {
-            self.execute(instruction)
+            self.push(next_program_counter);
+            self.read_next_word()
         }
         else
         {
-            let error_description = format!("0x{}{:x}", if prefixed { "cb" } else { "" }, instruction_byte);
-            panic!("Unknown instruction found for: {}", error_description);
-        };
+            next_program_counter
+        }
+    }
 
-        self.program_counter = next_pc;
+    // Return
+    fn return(&mut self, should_jump: bool) -> u16
+    {
+        if should_jump
+        {
+            self.pop()
+        }
+        else
+        {
+            self.program_counter.wrapping_add(1)
+        }
+    }
+
+    // Read and Write functions
+    fn read_next_byte(&self) -> u8
+    {
+        self.bus.read_byte(self.program_counter + 1)
+    }
+
+    fn read_next_word(&self) -> u16
+    {
+        ((self.bus.read_byte(self.program_counter + 2) as u16) << 8) | (self.bus.read_byte(self.program_counter +1) as u16)
     }
 }

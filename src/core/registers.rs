@@ -1,7 +1,7 @@
-pub mod FlagRegisters;
+use super::flag_registers::FlagsRegister;
 
 // 8-bit registers
-struct Registers
+pub struct Registers
 {
     A: u8,
     B: u8,
