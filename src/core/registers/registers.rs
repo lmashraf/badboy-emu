@@ -1,4 +1,4 @@
-use super::flag_registers::FlagsRegister;
+use flag_registers::FlagsRegister;
 
 // 8-bit registers
 pub struct Registers

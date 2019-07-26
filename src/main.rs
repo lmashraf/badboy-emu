@@ -1,5 +1,5 @@
 // Window Constants
-const ENLARGEMENT_FACTOR: usize = 1
+const ENLARGEMENT_FACTOR: usize = 1;
 const WINDOW: [usize; 2] = [(160 * ENLARGEMENT_FACTOR), (144 * ENLARGEMENT_FACTOR)];
 const NUMBER_OF_PIXELS: usize = 23040;
 
