@@ -84,6 +84,17 @@ pub enum Instruction
     ADD(ArithmeticTarget),
     JP(JumpTest),
     LD(LoadType),
+    POP(StackTarget),
+    PUSH(StackTarget),
+}
+
+// Stack Targets (PUSH, POP)
+pub enum StackTarget
+{
+    AF,
+    BC,
+    DE,
+    HL,
 }
 
 impl Instruction

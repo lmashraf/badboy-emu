@@ -3,7 +3,13 @@ pub mod instructions;
 pub mod registers;
 
 use self::instruction::{
-    ArithmeticTarget, JumpTest, ADDHLTarget, LoadByteSource, LoadByteTarget, LoadType,
+    ArithmeticTarget,
+    ADDHLTarget,
+    JumpTest,
+    LoadByteSource,
+    LoadByteTarget,
+    LoadType,
+    StackTarget,
 };
 
 use self::registers::Registers;
@@ -95,6 +101,33 @@ impl CPU
                     }
                 }
             }
+            // PUSH
+            Instruction::PUSH(target)
+            {
+                let value = match target
+                {
+                    StackTarget::BC => self.registers.get_BC(),
+                    _ =>
+                    {
+                        // TODO : support more targets
+                    }
+                    self.push(value);
+                    self.program_counter.wrapping_add(1)
+                }
+            }
+            // POP
+            Instruction::POP(target)
+            {
+                let result = self.pop();
+                match target
+                {
+                    StackTarget::BC => self.registers.set_BC(result),
+                    _ =>
+                    {
+                        // TODO: support more targets
+                    }
+                }
+            }
             _ =>
             {
                 // TODO: support more instructions
@@ -135,6 +168,41 @@ impl CPU
             // Jump instruction is 3 bytes wide, we still need to move the PC if we don't jump
             self.program_counter.wrapping_add(3)
         }
+    }
+
+    // Push
+    fn push(&mut self, value: u16)
+    {
+        // Decrease SP by 1: the Stack grows downward in memory.
+        self.stack_pointer = self.stack_pointer.wrapping_sub(1);
+
+        // Write the MSB of the 16-bit value into memory at the location SP is pointing
+        self.bus.write_byte(self.stack_pointer,((value & 0xFF00) >> 8) as u8);
+
+        // Decrease SP by 1
+        self.stack_pointer = self.stack_pointer.wrapping_sub(1);
+
+        // Write the LSB of the 16-bit value into memory at the location SP is pointing
+        self.bus.write_byte(self.stack_pointer,(value & 0x00FF) as u8);
+    }
+
+    // Pop
+    fn pop(&mut self) -> u16
+    {
+        // Read the LSB of the 16-bit value which is pointed by the SP
+        let least_significant_byte = self.bus.read_byte(self.stack_pointer) as u16;
+
+        // Increase SP by 1
+        self.stack_pointer = self.stack_pointer.wrapping_add(1);
+
+        // Read the MSB of the 16-bit value which is pointed by the SP
+        let most_significant_byte = self.bus.read_byte(self.stack_pointer) as u16;
+
+        // Increase SP by 1
+        self.stack_pointer = self.stack_pointer.wrapping_add(1);
+
+        // Pop the 16-bit value
+        (most_significant_byte << 8) | least_significant_byte
     }
 
     // Program Counter's step to next OpCode
