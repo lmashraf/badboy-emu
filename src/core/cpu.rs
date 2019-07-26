@@ -145,6 +145,16 @@ impl CPU
                     }
                 }
             }
+            // CALL
+            Instruction::CALL()
+            {
+                // TODO: implement CALL
+            }
+            // RET
+            Instruction::RET()
+            {
+                // TODO: implement RET
+            }
             // PUSH
             Instruction::PUSH(target)
             {
