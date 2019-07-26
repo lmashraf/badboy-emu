@@ -146,17 +146,35 @@ impl CPU
                 }
             }
             // CALL
-            Instruction::CALL()
+            Instruction::CALL(target) =>
             {
-                // TODO: implement CALL
+                let jump_condition = match target
+                {
+                    JumpTest::NZ => !self.registers.F.zero,
+                    _ =>
+                    {
+                        // TODO: support more CALL conditions
+                    }
+
+                    self.call(jump_condition)
+                }
             }
             // RET
-            Instruction::RET()
+            Instruction::RET(target) =>
             {
-                // TODO: implement RET
+                let jump_condition = match target
+                {
+                    JumpTest::NZ => !self.registers.false.zero,
+                    _ =>
+                    {
+                        // TODO: support more RET conditions
+                    }
+                }
+
+                self.return_(jump_condition)
             }
             // PUSH
-            Instruction::PUSH(target)
+            Instruction::PUSH(target) =>
             {
                 let value = match target
                 {
@@ -170,7 +188,7 @@ impl CPU
                 }
             }
             // POP
-            Instruction::POP(target)
+            Instruction::POP(target) =>
             {
                 let result = self.pop();
                 match target
@@ -278,7 +296,7 @@ impl CPU
     }
 
     // Return
-    fn return(&mut self, should_jump: bool) -> u16
+    fn return_(&mut self, should_jump: bool) -> u16
     {
         if should_jump
         {
