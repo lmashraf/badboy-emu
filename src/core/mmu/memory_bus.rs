@@ -18,8 +18,23 @@ impl MemoryBus
         }
     }
 
+    // Read and Write to and from Memory
     fn read_byte(&self, address: u16) -> u8
     {
+        let address = address as usize;
+
+        match address
+        {
+            VRAM_BEGIN ... VRAM_END =>
+            {
+                self.gpu.read_vram(address - VRAM_BEGIN, value)
+            }
+            _ =>
+            {
+                // TODO: support other areas of memory
+            }
+        }
+
         self.memory[address as usize]
     }
 
